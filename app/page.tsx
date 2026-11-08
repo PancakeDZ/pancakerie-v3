@@ -278,12 +278,20 @@ return (
             <a className="transition hover:text-[#c34e82]" href="#infos">Livraison</a>
           </nav>
 
-          <button
-            onClick={() => setPanierOuvert((ouvert) => !ouvert)}
-            className="rounded-full bg-[#a83f70] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-pink-200 transition hover:-translate-y-0.5 hover:bg-[#873057]"
-          >
-            <span aria-hidden="true">♡</span> <span className="ml-1">Mon panier ({nombreArticles})</span>
-          </button>
+         <button
+  type="button"
+  onClick={() => {
+    setPanierOuvert(true);
+    document.getElementById("panier")?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }}
+  className="rounded-full bg-[#a83f70] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-pink-200 transition hover:-translate-y-0.5 hover:bg-[#873057]"
+>
+  <span aria-hidden="true">♡</span>
+  <span className="ml-1">Mon panier ({nombreArticles})</span>
+</button>
         </div>
       </header>
 

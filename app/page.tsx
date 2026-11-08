@@ -329,8 +329,7 @@ return (
                 <p className="mt-1 font-serif text-3xl italic">Fait maison, avec le cœur.</p>
               </div>
             </div>
-            <div className="absolute -bottom-5 -left-5 rounded-2xl border border-[#f2d7e3] bg-white px-5 py-4 shadow-xl">
-              <span className="block text-xs font-semibold text-[#9b7187]">À partir de</span>
+<div className="absolute -bottom-16 -left-5 rounded-2xl border border-[#f2d7e3] bg-white px-5 py-4 shadow-xl">              <span className="block text-xs font-semibold text-[#9b7187]">À partir de</span>
               <span className="text-2xl font-black text-[#a83f70]">5 €</span>
             </div>
             <div className="absolute -right-3 -top-5 flex h-20 w-20 rotate-12 items-center justify-center rounded-full bg-[#f4d4e2] text-center text-xs font-black leading-tight text-[#8f315d] shadow-lg">

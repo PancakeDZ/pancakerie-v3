@@ -278,20 +278,14 @@ return (
             <a className="transition hover:text-[#c34e82]" href="#infos">Livraison</a>
           </nav>
 
-         <button
-  type="button"
-  onClick={() => {
-    setPanierOuvert(true);
-    document.getElementById("panier")?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-  }}
+       <a
+  href="#panier"
+  onClick={() => setPanierOuvert(true)}
   className="rounded-full bg-[#a83f70] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-pink-200 transition hover:-translate-y-0.5 hover:bg-[#873057]"
 >
   <span aria-hidden="true">♡</span>
   <span className="ml-1">Mon panier ({nombreArticles})</span>
-</button>
+</a>
         </div>
       </header>
 
@@ -428,8 +422,7 @@ return (
         </div>
 
         {panier.length > 0 && (
-          <div id="panier" className="mx-auto mt-10 max-w-2xl rounded-3xl border border-[#e9c9d8] bg-white p-6 shadow-xl shadow-pink-100">
-            <div className="flex items-center justify-between">
+<div id="panier" className="mx-auto mt-10 scroll-mt-28 max-w-2xl rounded-3xl border border-[#e9c9d8] bg-white p-6 shadow-xl shadow-pink-100">            <div className="flex items-center justify-between">
               <h3 className="font-serif text-2xl font-semibold text-[#54283f]">Votre sélection</h3>
               <button onClick={() => setPanierOuvert((ouvert) => !ouvert)} className="text-xs font-bold text-[#a83f70]">{panierOuvert ? "Masquer" : "Afficher"}</button>
             </div>

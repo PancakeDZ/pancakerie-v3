@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import AdminPanel, { BoutonDeconnexion } from './admin-panel'
+import Commandes from './commandes'
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -8,49 +9,95 @@ export default async function AdminPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
   if (!user) redirect('/admin/login')
 
   const { data: estAdmin } = await supabase.rpc('is_admin')
+
   if (!estAdmin) {
     return (
       <main className="mx-auto mt-24 max-w-sm rounded-3xl border bg-white p-6 text-center">
-        <p className="mb-4 font-bold">Accès refusé : ce compte n&apos;est pas administrateur.</p>
+        <p className="mb-4 font-bold">
+          Accès refusé : ce compte n&apos;est pas administrateur.
+        </p>
         <BoutonDeconnexion />
       </main>
     )
   }
 
-  const [produits, variantes, zones] = await Promise.all([
+  // Chargement des produits, variantes, zones de livraison et commandes
+  const [produits, variantes, zones, commandesResult] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price, compare_at_price, status, sort_order')
       .order('sort_order'),
+
     supabase
       .from('product_variants')
       .select('id, product_id, name, price, is_active, sort_order')
       .order('sort_order'),
+
     supabase
       .from('delivery_zones')
       .select('id, name, fee, min_order_amount, is_active')
       .order('fee')
       .order('name'),
+
+    supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100),
   ])
 
-  console.log('DIAGNOSTIC ADMIN', {
+  // Récupération des articles associés aux commandes
+  const idsCommandes = (commandesResult.data ?? []).map(
+    (commande) => commande.id
+  )
+
+  const articlesResult =
+    idsCommandes.length > 0
+      ? await supabase
+          .from('order_items')
+          .select('*')
+          .in('order_id', idsCommandes)
+      : { data: [], error: null }
+
+ console.log(
+  'DIAGNOSTIC ADMIN',
+  JSON.stringify({
     estAdmin,
-    produits: produits.error?.message,
-    nbProduits: produits.data?.length,
-    variantes: variantes.error?.message,
-    nbVariantes: variantes.data?.length,
-    zones: zones.error?.message,
-    nbZones: zones.data?.length,
+    produitsErreur: produits.error?.message ?? null,
+    variantesErreur: variantes.error?.message ?? null,
+    zonesErreur: zones.error?.message ?? null,
+    commandesErreur: commandesResult.error?.message ?? null,
+    articlesErreur: articlesResult.error?.message ?? null,
+    nombreCommandes: commandesResult.data?.length ?? 0,
+    nombreArticles: articlesResult.data?.length ?? 0,
   })
+)
 
   return (
-    <AdminPanel
-      produits={produits.data ?? []}
-      variantes={variantes.data ?? []}
-      zones={zones.data ?? []}
-    />
+    <>
+      <AdminPanel
+        produits={produits.data ?? []}
+        variantes={variantes.data ?? []}
+        zones={zones.data ?? []}
+      />
+
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        {commandesResult.error || articlesResult.error ? (
+          <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            Impossible de charger les commandes. Vérifie les autorisations
+            Supabase et les erreurs dans le terminal.
+          </p>
+        ) : (
+          <Commandes
+            commandes={commandesResult.data ?? []}
+            articles={articlesResult.data ?? []}
+          />
+        )}
+      </main>
+    </>
   )
 }

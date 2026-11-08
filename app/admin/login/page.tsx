@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState } from 'react'
@@ -17,37 +18,53 @@ export default function Login() {
     setErreur('')
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
     setChargement(false)
+
     if (error) {
       setErreur('E-mail ou mot de passe incorrect.')
       return
     }
+
     router.push('/admin')
     router.refresh()
   }
 
   return (
     <main className="mx-auto mt-24 max-w-sm rounded-3xl border border-[#FECDD3] bg-white p-6 shadow">
-      <h1 className="mb-4 text-xl font-black text-[#831843]">Connexion admin</h1>
+      <h1 className="mb-4 text-xl font-black text-[#831843]">
+        Connexion admin
+      </h1>
+
       <form onSubmit={seConnecter} className="space-y-3">
         <input
           type="email"
           placeholder="E-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-full border border-[#FECDD3] px-4 py-2 text-sm"
+          autoComplete="username"
+          className="w-full rounded-full border border-[#FECDD3] bg-white px-4 py-2 text-sm !text-gray-900 caret-pink-600 placeholder:!text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-400"
           required
         />
+
         <input
           type="password"
           placeholder="Mot de passe"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-full border border-[#FECDD3] px-4 py-2 text-sm"
+          autoComplete="current-password"
+          className="w-full rounded-full border border-[#FECDD3] bg-white px-4 py-2 text-sm !text-gray-900 caret-pink-600 placeholder:!text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-400"
           required
         />
-        {erreur && <p className="text-sm text-red-600">{erreur}</p>}
+
+        {erreur && (
+          <p className="text-sm text-red-600">{erreur}</p>
+        )}
+
         <button
           type="submit"
           disabled={chargement}

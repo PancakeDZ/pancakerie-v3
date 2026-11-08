@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/utils/supabase/browser";
 
 type Produit = {
   id: number;
@@ -14,7 +15,20 @@ type Produit = {
   image?: string;
   tone: string;
 };
-
+const IDS_SUPABASE: Record<number, string> = {
+  1: "48bfa6f5-a274-4ad2-a30f-0ffdb8897d8b",
+  2: "5f35e242-bf95-4912-8525-3296c54b81a4",
+  3: "881ec383-4153-4d7d-b634-cd2d47393398",
+  4: "f5765449-4475-409c-b097-e982130b0775",
+  10: "70432b6b-0c52-4c00-b168-782bb5983ff7",
+  11: "aef76381-ee30-4f8c-98b5-ae5f19828bdb",
+  20: "f9d4e062-7aa4-4915-9cd8-6b54feda1f1a",
+  21: "98ca2ef2-3f96-4550-827f-05aacdc99f35",
+  22: "1009f52d-bd51-41dd-8979-34fc3bb5ceed",
+  23: "12de415d-3f3a-42bd-8cbf-effefe626de3",
+  30: "25ee652f-abb8-47a2-9629-1ef18345bd27",
+  31: "dc138253-8f21-4d7b-b2e6-583978332987",
+};
 const PRODUITS: Produit[] = [
   {
     id: 1,
@@ -170,7 +184,43 @@ const TARIFS_LIVRAISON: Record<string, number> = {
 type LignePanier = { nom: string; prix: number; quantite: number };
 
 export default function ApercuPage() {
-   const [categorie, setCategorie] = useState("Tous");
+    const supabase = createClient();
+
+  const [photosSupabase, setPhotosSupabase] = useState<Record<number, string>>({});
+   useEffect(() => {
+    async function chargerPhotos() {
+      const { data, error } = await supabase
+        .from("product_images")
+        .select("product_id, storage_path")
+        .eq("is_primary", true);
+
+      if (error) {
+        console.error("Erreur chargement photos :", error);
+        return;
+      }
+
+      const nouvellesPhotos: Record<number, string> = {};
+
+      for (const photo of data ?? []) {
+        const produitId = Object.entries(IDS_SUPABASE).find(
+          ([, uuid]) => uuid === photo.product_id
+        )?.[0];
+
+        if (produitId) {
+          const { data: urlData } = supabase.storage
+            .from("product-images")
+            .getPublicUrl(photo.storage_path);
+
+          nouvellesPhotos[Number(produitId)] = urlData.publicUrl;
+        }
+      }
+
+      setPhotosSupabase(nouvellesPhotos);
+    }
+
+    chargerPhotos();
+  }, []);
+  const [categorie, setCategorie] = useState("Tous");
   const [panier, setPanier] = useState<LignePanier[]>([]);
   const [panierOuvert, setPanierOuvert] = useState(false);
   const [villeLivraison, setVilleLivraison] = useState("");
@@ -383,8 +433,13 @@ return (
           {produitsFiltres.map((produit) => (
             <article key={produit.id} className="group overflow-hidden rounded-[1.6rem] border border-[#f0dce5] bg-white shadow-[0_8px_30px_rgba(108,54,82,0.06)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_40px_rgba(108,54,82,0.12)]">
               <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${produit.tone}`}>
-                {produit.image ? (
-                  <img src={produit.image} alt={produit.nom} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                
+                  {photosSupabase[produit.id] || produit.image ? (
+  <img
+    src={photosSupabase[produit.id] || produit.image}
+    alt={produit.nom}
+    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+  />
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <span className="text-7xl drop-shadow-sm">{produit.emoji}</span>

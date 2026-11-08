@@ -1,3 +1,4 @@
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import AdminPanel, { BoutonDeconnexion } from './admin-panel'
@@ -25,8 +26,14 @@ export default async function AdminPage() {
     )
   }
 
-  // Chargement des produits, variantes, zones de livraison et commandes
-  const [produits, variantes, zones, commandesResult] = await Promise.all([
+  // Chargement des produits, variantes, zones, photos et commandes
+  const [
+    produits,
+    variantes,
+    zones,
+    photos,
+    commandesResult,
+  ] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price, compare_at_price, status, sort_order')
@@ -42,6 +49,11 @@ export default async function AdminPage() {
       .select('id, name, fee, min_order_amount, is_active')
       .order('fee')
       .order('name'),
+
+    supabase
+      .from('product_images')
+      .select('id, product_id, storage_path, alt_text, is_primary, sort_order')
+      .order('sort_order'),
 
     supabase
       .from('orders')
@@ -63,19 +75,21 @@ export default async function AdminPage() {
           .in('order_id', idsCommandes)
       : { data: [], error: null }
 
- console.log(
-  'DIAGNOSTIC ADMIN',
-  JSON.stringify({
-    estAdmin,
-    produitsErreur: produits.error?.message ?? null,
-    variantesErreur: variantes.error?.message ?? null,
-    zonesErreur: zones.error?.message ?? null,
-    commandesErreur: commandesResult.error?.message ?? null,
-    articlesErreur: articlesResult.error?.message ?? null,
-    nombreCommandes: commandesResult.data?.length ?? 0,
-    nombreArticles: articlesResult.data?.length ?? 0,
-  })
-)
+  console.log(
+    'DIAGNOSTIC ADMIN',
+    JSON.stringify({
+      estAdmin,
+      produitsErreur: produits.error?.message ?? null,
+      variantesErreur: variantes.error?.message ?? null,
+      zonesErreur: zones.error?.message ?? null,
+      photosErreur: photos.error?.message ?? null,
+      commandesErreur: commandesResult.error?.message ?? null,
+      articlesErreur: articlesResult.error?.message ?? null,
+      nombreCommandes: commandesResult.data?.length ?? 0,
+      nombreArticles: articlesResult.data?.length ?? 0,
+      nombrePhotos: photos.data?.length ?? 0,
+    })
+  )
 
   return (
     <>
@@ -83,6 +97,7 @@ export default async function AdminPage() {
         produits={produits.data ?? []}
         variantes={variantes.data ?? []}
         zones={zones.data ?? []}
+        photos={photos.data ?? []}
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
